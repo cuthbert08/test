@@ -6,10 +6,18 @@ const API_URL = `${process.env.BACKEND_API_URL}/api/trigger-reminder`;
 export async function POST(request: NextRequest) {
     try {
         const token = request.headers.get('x-access-token');
-        const body = await request.json();
-        const response = await axios.post(API_URL, body, {
-            headers: { 'x-access-token': token || '' }
-        });
+        const cronSecret = request.headers.get('x-cron-secret');
+        const body = await request.json().catch(() => ({})); // Allow empty body
+
+        const headers: Record<string, string> = {};
+        if (token) {
+            headers['x-access-token'] = token;
+        }
+        if (cronSecret) {
+            headers['x-cron-secret'] = cronSecret;
+        }
+
+        const response = await axios.post(API_URL, body, { headers });
         return NextResponse.json(response.data);
     } catch (error) {
         if (axios.isAxiosError(error)) {
