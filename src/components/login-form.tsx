@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from './ui/separator';
 
@@ -92,9 +92,17 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center pt-4">
           <Separator className="w-full mb-4" />
-          <Link href="/report" passHref>
+          <div className="flex justify-center items-center gap-4">
+            <Link href="/" passHref>
+                <Button variant="link">
+                    <ArrowLeft className="mr-2" />
+                    Back to Home
+                </Button>
+            </Link>
+            <Link href="/report" passHref>
               <Button variant="link">Report an Issue</Button>
-          </Link>
+            </Link>
+          </div>
       </CardFooter>
     </Card>
   );
