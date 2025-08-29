@@ -12,7 +12,7 @@ def send_sms_message(to_number, message_body):
     password = os.environ.get("BULKSMS_PASSWORD")
 
     if not username or not password:
-        print("MOCK SMS (missing BulkSMS credentials): SMS not sent.")
+        print("ERROR: BulkSMS username or password is not configured in environment variables.")
         return False
         
     # The BulkSMS API expects a specific format.

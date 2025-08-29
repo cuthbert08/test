@@ -8,11 +8,8 @@ def send_email_message(to_email, subject, html_body):
     api_key = os.environ.get("RESEND_API_KEY")
     from_email = os.environ.get("RESEND_FROM_EMAIL")
 
-    if not api_key:
-        print("MOCK EMAIL (missing RESEND_API_KEY): Email not sent.")
-        return False
-    if not from_email:
-        print("MOCK EMAIL (missing RESEND_FROM_EMAIL): Email not sent.")
+    if not api_key or not from_email:
+        print("ERROR: Resend API Key or From Email is not configured in environment variables.")
         return False
 
     resend.api_key = api_key

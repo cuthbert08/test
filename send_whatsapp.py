@@ -15,11 +15,11 @@ def send_whatsapp_template_message(recipient_number, template_name, template_par
     api_key = os.environ.get("AISENSY_API_KEY")
 
     if not api_key:
-        print("MOCK WHATSAPP (missing AISENSY_API_KEY): Message not sent.")
+        print("ERROR: AISENSY_API_KEY is not configured in environment variables.")
         return False
     
     if not template_name:
-        print(f"MOCK WHATSAPP (missing template name env var): Message for {recipient_number} not sent.")
+        print(f"ERROR: No AiSensy template name was provided for the request to {recipient_number}.")
         return False
 
     headers = {
@@ -50,4 +50,5 @@ def send_whatsapp_template_message(recipient_number, template_name, template_par
         print(f"Error sending WhatsApp to {recipient_number}: {e}")
         return False
     except Exception as e:
-        print(f"An unexpected error occurred while sending WhatsApp
+        print(f"An unexpected error occurred while sending WhatsApp: {e}")
+        return False
