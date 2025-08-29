@@ -1,6 +1,10 @@
-export default function Home() {
+import { Dashboard } from '@/components/dashboard';
+import ProtectedLayout from '@/components/ProtectedLayout';
+
+export default function HomePage() {
   return (
-    <main>
-    </main>
+    <ProtectedLayout>
+      <Dashboard />
+    </ProtectedLayout>
   );
 }
