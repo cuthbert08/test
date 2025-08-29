@@ -141,3 +141,4 @@ export const getHistory = async (): Promise<CommunicationEvent[]> => {
 
 export const deleteHistory = async (ids: string[]): Promise<void> => {
     await apiClient.delete('/history', { data: { ids } });
+}

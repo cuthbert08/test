@@ -12,7 +12,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { getHistory, deleteHistory } from '@/lib/api';
-import { type CommunicationEvent } from '@/lib/types';
+import { type CommunicationEvent, type CommunicationDetail } from '@/lib/types';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
@@ -27,9 +27,45 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader } from './ui/card';
+import { Trash2, MessageSquare, Users } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from './ui/badge';
+
+const getStatusVariant = (status: CommunicationEvent['status']) => {
+  switch (status) {
+    case 'Completed':
+      return 'default';
+    case 'Partial':
+      return 'secondary';
+    case 'Failed':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+};
+
+const renderRecipients = (details: CommunicationDetail[]) => {
+  if (!details || details.length === 0) {
+    return 'N/A';
+  }
+  const uniqueRecipients = [...new Set(details.map(d => d.recipient))];
+  const firstRecipient = uniqueRecipients[0];
+
+  if (uniqueRecipients.length === 1) {
+    return firstRecipient;
+  }
+
+  return `${firstRecipient} and ${uniqueRecipients.length - 1} others`;
+};
+
+const renderContentPreview = (details: CommunicationDetail[]) => {
+    if (!details || details.length === 0) {
+        return '...';
+    }
+    const firstDetailWithContent = details.find(d => d.content);
+    return firstDetailWithContent ? firstDetailWithContent.content : 'Template Message';
+}
 
 
 export function History() {
@@ -40,12 +76,12 @@ export function History() {
   const { hasRole } = useAuth();
 
   const canPerformAction = hasRole(['superuser', 'editor']);
+  const canDelete = hasRole(['superuser']);
 
   const fetchHistory = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getHistory();
-      // Ensure data is always an array to prevent errors
       setHistory(Array.isArray(data) ? data : []);
     } catch (error) {
       toast({
@@ -53,7 +89,7 @@ export function History() {
         description: 'Could not load the communication history.',
         variant: 'destructive',
       });
-      setHistory([]); // Set to empty array on error
+      setHistory([]);
     } finally {
       setLoading(false);
     }
@@ -82,7 +118,7 @@ export function History() {
   };
 
   const handleDeleteSelected = async () => {
-    if (!canPerformAction || selectedItems.size === 0) return;
+    if (!canDelete || selectedItems.size === 0) return;
     try {
       await deleteHistory(Array.from(selectedItems));
       toast({
@@ -90,7 +126,7 @@ export function History() {
         description: `${selectedItems.size} history event(s) have been deleted.`,
       });
       setSelectedItems(new Set());
-      await fetchHistory(); // Refresh the history list
+      await fetchHistory(); 
     } catch (error) {
       toast({
         title: 'Error Deleting History',
@@ -101,12 +137,26 @@ export function History() {
   };
 
   const isAllSelected = history.length > 0 && selectedItems.size === history.length;
+  
+  const getIconForType = (type: string) => {
+    switch (type.toLowerCase()) {
+        case 'reminder':
+            return <MessageSquare className="h-4 w-4 text-blue-500" />;
+        case 'announcement':
+            return <Users className="h-4 w-4 text-purple-500" />;
+        case 'issue notification':
+            return <MessageSquare className="h-4 w-4 text-red-500" />
+        default:
+            return <MessageSquare className="h-4 w-4 text-gray-500" />;
+    }
+  }
+
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Communication History</h1>
-        {canPerformAction && selectedItems.size > 0 && (
+        {canDelete && selectedItems.size > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
@@ -136,7 +186,7 @@ export function History() {
                     <TableHeader>
                         <TableRow>
                         <TableHead className="w-[50px]">
-                             {canPerformAction && (
+                             {canDelete && (
                                 <Checkbox
                                     checked={isAllSelected}
                                     onCheckedChange={(checked) => handleSelectAll(!!checked)}
@@ -145,17 +195,19 @@ export function History() {
                                 />
                             )}
                         </TableHead>
-                        <TableHead>Date</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead>Recipient</TableHead>
-                        <TableHead>Content</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Recipients</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Preview</TableHead>
                         </TableRow>
                     </TableHeader>
                      <TableBody>
                          {loading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                                 <TableRow key={i}>
-                                    <TableCell colSpan={5}>
+                                    <TableCell colSpan={7}>
                                         <Skeleton className="h-8 w-full" />
                                     </TableCell>
                                 </TableRow>
@@ -164,7 +216,7 @@ export function History() {
                             history.map((item) => (
                                 <TableRow key={item.id}>
                                     <TableCell>
-                                        {canPerformAction && (
+                                        {canDelete && (
                                             <Checkbox
                                                 checked={selectedItems.has(item.id)}
                                                 onCheckedChange={() => handleSelectItem(item.id)}
@@ -172,15 +224,22 @@ export function History() {
                                             />
                                         )}
                                     </TableCell>
-                                    <TableCell className="font-medium whitespace-nowrap">{format(new Date(item.timestamp), 'dd MMM yyyy, HH:mm')}</TableCell>
-                                    <TableCell>{item.type}</TableCell>
-                                    <TableCell>{(item as any).recipient || 'N/A'}</TableCell>
-                                    <TableCell className="text-muted-foreground truncate max-w-sm">{(item as any).content}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            {getIconForType(item.type)}
+                                            <span className="font-medium">{item.type}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{item.subject}</TableCell>
+                                    <TableCell className="whitespace-nowrap">{format(new Date(item.timestamp), 'dd MMM yyyy, HH:mm')}</TableCell>
+                                    <TableCell>{renderRecipients(item.details)}</TableCell>
+                                    <TableCell><Badge variant={getStatusVariant(item.status)}>{item.status}</Badge></TableCell>
+                                    <TableCell className="text-muted-foreground truncate max-w-xs">{renderContentPreview(item.details)}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                                 No communication history found.
                             </TableCell>
                         </TableRow>
