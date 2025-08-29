@@ -12,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { getIssues, updateIssueStatus, getPublicIssues, deleteIssues } from '@/lib/api';
+import { getIssues, updateIssueStatus, deleteIssues } from '@/lib/api';
 import { type Issue } from '@/lib/types';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
@@ -31,7 +31,6 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Trash2 } from 'lucide-react';
-import ProtectedLayout from './ProtectedLayout';
 
 const getStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
@@ -54,7 +53,7 @@ export function IssueTracker() {
   const [newStatus, setNewStatus] = useState('');
   const [selectedIssues, setSelectedIssues] = useState<Set<string>>(new Set());
   const { toast } = useToast();
-  const { isAuthenticated, hasRole } = useAuth();
+  const { hasRole } = useAuth();
   
   const canPerformAction = hasRole(['superuser', 'editor']);
   const canDelete = hasRole(['superuser']);
@@ -62,7 +61,7 @@ export function IssueTracker() {
   const fetchIssues = useCallback(async () => {
     try {
       setLoading(true);
-      const data = isAuthenticated ? await getIssues() : await getPublicIssues();
+      const data = await getIssues();
       setIssues(data);
     } catch (error) {
       toast({
@@ -74,7 +73,7 @@ export function IssueTracker() {
     } finally {
       setLoading(false);
     }
-  }, [toast, isAuthenticated]);
+  }, [toast]);
 
   useEffect(() => {
     fetchIssues();
@@ -150,7 +149,54 @@ export function IssueTracker() {
     }
   };
 
-  const PageContent = () => (
+  const renderIssueList = () => {
+    if (loading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+          <TableRow key={i}>
+            {canDelete && <TableCell><Skeleton className="h-5 w-5" /></TableCell>}
+            <TableCell colSpan={canDelete ? 5 : 6}><Skeleton className="h-8 w-full" /></TableCell>
+          </TableRow>
+      ));
+    }
+    if (issues.length === 0) {
+      return (
+          <TableRow>
+            <TableCell colSpan={canPerformAction ? 6 : 5} className="text-center">
+              No issues reported yet.
+            </TableCell>
+          </TableRow>
+      );
+    }
+    return issues.map((issue) => (
+      <TableRow key={issue.id}>
+        {canDelete && (
+            <TableCell>
+                <Checkbox
+                    checked={selectedIssues.has(issue.id)}
+                    onCheckedChange={() => handleSelectIssue(issue.id)}
+                    aria-label={`Select issue ${issue.id}`}
+                />
+            </TableCell>
+        )}
+        <TableCell>{format(new Date(issue.timestamp), 'dd MMM yyyy, HH:mm')}</TableCell>
+        <TableCell>{issue.reported_by}</TableCell>
+        <TableCell>{issue.flat_number}</TableCell>
+        <TableCell className='max-w-xs truncate'>{issue.description}</TableCell>
+        <TableCell>
+          <Badge variant={getStatusVariant(issue.status)}>{issue.status}</Badge>
+        </TableCell>
+        {canPerformAction && (
+          <TableCell className="text-right">
+              <Button variant="outline" size="sm" onClick={() => handleOpenDialog(issue)}>
+                  Update Status
+              </Button>
+          </TableCell>
+        )}
+      </TableRow>
+    ))
+  }
+
+  return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Issue Tracker</h1>
@@ -274,67 +320,6 @@ export function IssueTracker() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-
-  const renderIssueList = () => {
-    if (loading) {
-      return Array.from({ length: 5 }).map((_, i) => (
-          <TableRow key={i}>
-            {canDelete && <TableCell><Skeleton className="h-5 w-5" /></TableCell>}
-            <TableCell colSpan={canDelete ? 5 : 6}><Skeleton className="h-8 w-full" /></TableCell>
-          </TableRow>
-      ));
-    }
-    if (issues.length === 0) {
-      return (
-          <TableRow>
-            <TableCell colSpan={canPerformAction ? 6 : 5} className="text-center">
-              No issues reported yet.
-            </TableCell>
-          </TableRow>
-      );
-    }
-    return issues.map((issue) => (
-      <TableRow key={issue.id}>
-        {canDelete && (
-            <TableCell>
-                <Checkbox
-                    checked={selectedIssues.has(issue.id)}
-                    onCheckedChange={() => handleSelectIssue(issue.id)}
-                    aria-label={`Select issue ${issue.id}`}
-                />
-            </TableCell>
-        )}
-        <TableCell>{format(new Date(issue.timestamp), 'dd MMM yyyy, HH:mm')}</TableCell>
-        <TableCell>{issue.reported_by}</TableCell>
-        <TableCell>{issue.flat_number}</TableCell>
-        <TableCell className='max-w-xs truncate'>{issue.description}</TableCell>
-        <TableCell>
-          <Badge variant={getStatusVariant(issue.status)}>{issue.status}</Badge>
-        </TableCell>
-        {canPerformAction && (
-          <TableCell className="text-right">
-              <Button variant="outline" size="sm" onClick={() => handleOpenDialog(issue)}>
-                  Update Status
-              </Button>
-          </TableCell>
-        )}
-      </TableRow>
-    ))
-  }
-
-  if (isAuthenticated) {
-    return (
-      <ProtectedLayout>
-        <PageContent />
-      </ProtectedLayout>
-    )
-  }
-
-  return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-      <PageContent />
     </div>
   );
 }

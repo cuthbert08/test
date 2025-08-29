@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/lib/types';
 import axios from 'axios';
@@ -17,11 +17,44 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Set the inactivity timeout to 30 minutes
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const inactivityTimer = useRef<NodeJS.Timeout>();
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    setToken(null);
+    setUser(null);
+    clearTimeout(inactivityTimer.current);
+    router.push('/login');
+  }, [router]);
+
+  const resetInactivityTimer = useCallback(() => {
+    clearTimeout(inactivityTimer.current);
+    inactivityTimer.current = setTimeout(logout, INACTIVITY_TIMEOUT);
+  }, [logout]);
+
+
+  useEffect(() => {
+    const events = ['mousemove', 'keydown', 'click', 'scroll'];
+    if (token) {
+        events.forEach(event => window.addEventListener(event, resetInactivityTimer));
+        resetInactivityTimer();
+    }
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, resetInactivityTimer));
+      clearTimeout(inactivityTimer.current);
+    };
+  }, [resetInactivityTimer, token]);
+
 
   const loadAuthFromStorage = useCallback(() => {
     setIsLoading(true);
@@ -67,14 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         throw new Error('An unknown error occurred during login.');
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    setToken(null);
-    setUser(null);
-    router.push('/login');
   };
   
   const hasRole = useCallback((roles: string[]): boolean => {
