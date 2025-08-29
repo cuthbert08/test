@@ -20,15 +20,14 @@ export function LandingPage() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+        <section className="w-full py-12 md:py-20 lg:py-24">
           <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-               <div className="flex flex-col justify-center space-y-4">
+            <div className="flex flex-col items-center space-y-4 text-center">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                  <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                     Automate Your Building's Bin Duty Rotation
                   </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                  <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                     Our platform sends automated reminders, tracks maintenance issues, and manages resident communications, saving you time and hassle.
                   </p>
                 </div>
@@ -41,59 +40,50 @@ export function LandingPage() {
                     Report an Issue
                   </Link>
                 </div>
-              </div>
-              <img
-                src="https://picsum.photos/600/400?grayscale"
-                data-ai-hint="organized calendar schedule"
-                width="600"
-                height="400"
-                alt="Hero"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
-              />
             </div>
           </div>
         </section>
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section id="features" className="w-full py-12 md:py-20 lg:py-24 bg-muted">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">Key Features</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Everything You Need to Manage Your Building</h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Everything You Need to Manage Your Building</h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-lg">
                   From automated reminders to issue tracking, our platform simplifies building management for everyone.
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
+            <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-8">
               <Card>
-                <CardContent className="flex flex-col items-center justify-center gap-4 p-6 text-center">
-                  <div className="rounded-full bg-primary p-4 text-primary-foreground">
-                    <BellRing className="h-8 w-8" />
+                <CardContent className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+                  <div className="rounded-full bg-primary p-3 text-primary-foreground">
+                    <BellRing className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold">Automated Reminders</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="text-lg font-bold">Automated Reminders</h3>
+                  <p className="text-sm text-muted-foreground">
                     Weekly duty reminders sent automatically via Email, SMS, and WhatsApp so no one ever forgets.
                   </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="flex flex-col items-center justify-center gap-4 p-6 text-center">
-                  <div className="rounded-full bg-primary p-4 text-primary-foreground">
-                    <Wrench className="h-8 w-8" />
+                <CardContent className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+                  <div className="rounded-full bg-primary p-3 text-primary-foreground">
+                    <Wrench className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold">Issue Tracking</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="text-lg font-bold">Issue Tracking</h3>
+                  <p className="text-sm text-muted-foreground">
                     Residents can report maintenance issues through a simple form, notifying admins instantly.
                   </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="flex flex-col items-center justify-center gap-4 p-6 text-center">
-                  <div className="rounded-full bg-primary p-4 text-primary-foreground">
-                    <Users className="h-8 w-8" />
+                <CardContent className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+                  <div className="rounded-full bg-primary p-3 text-primary-foreground">
+                    <Users className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold">Resident Management</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="text-lg font-bold">Resident Management</h3>
+                  <p className="text-sm text-muted-foreground">
                     Easily manage resident information, contact details, and the duty rotation order.
                   </p>
                 </CardContent>
@@ -101,11 +91,11 @@ export function LandingPage() {
             </div>
           </div>
         </section>
-        <section id="contact" className="w-full py-12 md:py-24 lg:py-32">
+        <section id="contact" className="w-full py-12 md:py-20 lg:py-24">
           <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
             <div className="space-y-3">
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">Get in Touch</h2>
-              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-lg">
                 Have questions or need support? Contact the building administrator.
               </p>
             </div>
