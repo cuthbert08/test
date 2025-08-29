@@ -95,6 +95,9 @@ export function LoginForm() {
           <Link href="/report" passHref>
               <Button variant="link">Report an Issue</Button>
           </Link>
+          <Link href="/issues" passHref>
+             <Button variant="link">View Reported Issues</Button>
+          </Link>
       </CardFooter>
     </Card>
   );
