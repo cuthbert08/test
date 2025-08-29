@@ -1,10 +1,5 @@
-import { Dashboard } from '@/components/dashboard';
-import ProtectedLayout from '@/components/ProtectedLayout';
+import { LandingPage } from '@/components/landing-page';
 
 export default function HomePage() {
-  return (
-    <ProtectedLayout>
-      <Dashboard />
-    </ProtectedLayout>
-  );
+  return <LandingPage />;
 }

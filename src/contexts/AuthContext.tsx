@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('authUser', JSON.stringify(data.user));
         setToken(data.token);
         setUser(data.user);
-        router.push('/');
+        router.push('/dashboard');
       } else {
         throw new Error('Login failed: No token or user data returned.');
       }
