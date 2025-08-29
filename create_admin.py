@@ -5,6 +5,10 @@ import json
 import uuid
 from upstash_redis import Redis
 from werkzeug.security import generate_password_hash
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def create_admin():
     """
@@ -30,7 +34,7 @@ def create_admin():
 
     try:
         # --- Connect to Redis ---
-        # This automatically uses the environment variables on Vercel
+        # This automatically uses the environment variables loaded from the .env file
         redis = Redis.from_env()
         print("Successfully connected to Redis.")
 
@@ -69,7 +73,7 @@ def create_admin():
     except Exception as e:
         print(f"\n--- An Error Occurred ---")
         print(f"Could not create admin user due to an error: {e}")
-        print("Please check your Redis connection details (UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN) in your Vercel environment variables.")
+        print("Please check your Redis connection details (UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN) in your .env file.")
 
 if __name__ == '__main__':
     create_admin()
