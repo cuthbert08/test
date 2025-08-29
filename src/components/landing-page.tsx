@@ -15,7 +15,7 @@ export function LandingPage() {
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link href="/login" passHref>
-             <Button variant="outline">Admin Login</Button>
+             <Button variant="outline">Login</Button>
           </Link>
         </nav>
       </header>
