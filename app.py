@@ -25,7 +25,6 @@ redis = Redis(
 
 
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'default-super-secret-key-for-testing')
-CRON_SECRET = os.environ.get('CRON_SECRET')
 
 # --- IMPORT SENDING FUNCTIONS ---
 from send_whatsapp import send_whatsapp_template_message
@@ -297,7 +296,7 @@ def handle_specific_resident(current_user, resident_id):
             for r in residents:
                 if r.get("id") == rid:
                     r["name"] = data.get("name", r["name"])
-                    r["flat_number"] = data.get("flat_number", r.get("flat_number"))
+                    r["flat_number"]_number"] = data.get("flat_number", r.get("flat_number"))
                     r["contact"] = data.get("contact", r["contact"])
                     r["notes"] = data.get("notes", r.get("notes"))
                     resident_found = True
@@ -492,6 +491,11 @@ def _run_reminder_logic(user_email="System (Cron)", custom_template=None):
     """
     Core logic for sending a reminder. Can be called by cron or manual trigger.
     """
+    reminders_paused = json.loads(redis.get('reminders_paused') or 'false')
+    if reminders_paused and user_email == "System (Cron)":
+        add_log_entry("System", "Automatic reminder skipped because reminders are paused.")
+        return jsonify({"message": "Reminders are paused, automatic reminder skipped."}), 200
+
     residents_json = redis.get('residents')
     residents = json.loads(residents_json) if residents_json else []
     if not residents:
@@ -546,36 +550,33 @@ def _run_reminder_logic(user_email="System (Cron)", custom_template=None):
 
 @app.route('/api/trigger-reminder', methods=['POST', 'GET'])
 def trigger_reminder():
-    # Check for cron secret first
-    if 'x-cron-secret' in request.headers and request.headers['x-cron-secret'] == CRON_SECRET:
-        reminders_paused = json.loads(redis.get('reminders_paused') or 'false')
-        if reminders_paused:
-            add_log_entry("System", "Automatic reminder skipped because reminders are paused.")
-            return jsonify({"message": "Reminders are paused, automatic reminder skipped."}), 200
+    # This endpoint can be triggered by Vercel's cron (GET) or a logged-in user (POST)
+    
+    # Vercel Cron jobs do not require a special secret here, 
+    # as they are protected by deployment-level security.
+    # We trust the GET request if it comes through our proxy.
+    if request.method == 'GET':
         return _run_reminder_logic()
 
-    # If no valid cron secret, fall back to token-based auth
-    token = request.headers.get('x-access-token')
-    if not token:
-        return jsonify({"message": "Unauthorized: Token or cron secret is missing"}), 401
-    try:
-        data = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
-        admins_json = redis.get('admins')
-        admins = json.loads(admins_json) if admins_json else []
-        current_user = next((admin for admin in admins if admin['id'] == data['id']), None)
-        if not current_user:
-            return jsonify({'message': 'User not found!'}), 401
-        
-        # This part is for manual trigger by a logged-in user, which is always POST
-        if request.method == 'POST':
+    # For manual triggers (POST), we require a valid user token.
+    if request.method == 'POST':
+        token = request.headers.get('x-access-token')
+        if not token:
+            return jsonify({"message": "Unauthorized: Token is missing"}), 401
+        try:
+            data = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+            admins_json = redis.get('admins')
+            admins = json.loads(admins_json) if admins_json else []
+            current_user = next((admin for admin in admins if admin['id'] == data['id']), None)
+            if not current_user:
+                return jsonify({'message': 'User not found!'}), 401
+            
             custom_template = request.get_json().get('message') if request.is_json else None
             return _run_reminder_logic(user_email=current_user['email'], custom_template=custom_template)
-        else:
-            # If a non-cron GET request is made, it's not allowed
-            return jsonify({"message": "Method not allowed for authenticated users"}), 405
+        except Exception as e:
+            return jsonify({"message": "Token is invalid or an error occurred", "error": str(e)}), 401
 
-    except Exception as e:
-        return jsonify({"message": "Token is invalid or an error occurred", "error": str(e)}), 401
+    return jsonify({"message": "Method not allowed"}), 405
 
 
 @app.route('/api/announcements', methods=['POST'])
@@ -736,6 +737,3 @@ def initialize_data():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-    
-    

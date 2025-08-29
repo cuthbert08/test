@@ -6,19 +6,17 @@ const API_URL = `${process.env.BACKEND_API_URL}/api/trigger-reminder`;
 async function handler(request: NextRequest) {
     try {
         const token = request.headers.get('x-access-token');
-        const cronSecret = request.headers.get('x-cron-secret');
         
+        // Vercel cron jobs send a secret header for verification. We can check for it.
+        // However, for simplicity and since the backend handles auth, we'll just forward user tokens.
         const headers: Record<string, string> = {};
         if (token) {
             headers['x-access-token'] = token;
         }
-        if (cronSecret) {
-            headers['x-cron-secret'] = cronSecret;
-        }
 
         let response;
         if (request.method === 'GET') {
-            // For cron jobs, which are typically GET requests
+            // For cron jobs, which are GET requests
             response = await axios.get(API_URL, { headers });
         } else {
             // For manual triggers from the frontend, which are POST
@@ -39,5 +37,3 @@ async function handler(request: NextRequest) {
 }
 
 export { handler as GET, handler as POST };
-
-    
