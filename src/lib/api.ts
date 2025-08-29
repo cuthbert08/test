@@ -85,10 +85,12 @@ export const getIssues = async (): Promise<Issue[]> => {
     return response.data;
 };
 
+// This function is for the public issue tracker page and doesn't need a token
 export const getPublicIssues = async (): Promise<Issue[]> => {
-    const response = await apiClient.get('/issues/public');
+    const response = await axios.get('/api/issues/public');
     return response.data;
 };
+
 
 export const reportIssue = async (data: ReportIssueData) => {
     const response = await apiClient.post('/issues', data);
@@ -139,4 +141,3 @@ export const getHistory = async (): Promise<CommunicationEvent[]> => {
 
 export const deleteHistory = async (ids: string[]): Promise<void> => {
     await apiClient.delete('/history', { data: { ids } });
-};
