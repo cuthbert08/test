@@ -12,7 +12,7 @@ import { getSettings, updateSettings, getAdmins, addAdmin, updateAdmin, deleteAd
 import { type SystemSettings, type AdminUser } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Pencil, Trash2, PlusCircle, Copy, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Pencil, Trash2, PlusCircle, Copy, ExternalLink, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
@@ -26,6 +26,7 @@ function AdminManagement() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<Partial<AdminUser> & { password?: string } | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
 
@@ -47,6 +48,7 @@ function AdminManagement() {
 
   const handleOpenDialog = (admin?: AdminUser) => {
     setEditingAdmin(admin ? { ...admin } : { email: '', role: 'editor', password: '' });
+    setShowPassword(false);
     setIsDialogOpen(true);
   };
 
@@ -155,7 +157,25 @@ function AdminManagement() {
             </div>
              <div className="space-y-2">
                 <Label htmlFor="password">New Password</Label>
-                <Input id="password" type="password" placeholder={editingAdmin?.id ? 'Leave blank to keep current password' : ''} value={editingAdmin?.password || ''} onChange={(e) => setEditingAdmin({...editingAdmin, password: e.target.value})} />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? 'text' : 'password'} 
+                    placeholder={editingAdmin?.id ? 'Leave blank to keep current password' : ''} 
+                    value={editingAdmin?.password || ''} 
+                    onChange={(e) => setEditingAdmin({...editingAdmin, password: e.target.value})} 
+                  />
+                   <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute inset-y-0 right-0 h-full px-3"
+                      onClick={() => setShowPassword(!showPassword)}
+                  >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                      <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+                  </Button>
+                </div>
               </div>
           </div>
           <DialogFooter>
