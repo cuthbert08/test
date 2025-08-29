@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { NextResponse, NextRequest } from 'next/server';
 
-const API_URL = 'https://bin-reminder-app.vercel.app/api/settings';
+const API_URL = `${process.env.BACKEND_API_URL}/api/settings`;
 
 export async function GET(request: NextRequest) {
   try {

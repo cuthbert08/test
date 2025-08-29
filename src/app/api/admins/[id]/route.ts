@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { NextResponse, NextRequest } from 'next/server';
 
-const API_URL = 'https://bin-reminder-app.vercel.app/api/admins';
+const API_URL = `${process.env.BACKEND_API_URL}/api/admins`;
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     try {

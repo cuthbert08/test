@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { NextResponse } from 'next/server';
 
-const API_URL = 'https://bin-reminder-app.vercel.app/api/auth/login';
+const API_URL = `${process.env.BACKEND_API_URL}/api/auth/login`;
 
 export async function POST(request: Request) {
     try {

@@ -4,7 +4,7 @@ import { NextResponse, NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('x-access-token');
-    const response = await axios.get('https://bin-reminder-app.vercel.app/api/dashboard', {
+    const response = await axios.get(`${process.env.BACKEND_API_URL}/api/dashboard`, {
         headers: {
             'x-access-token': token || ''
         }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { NextResponse, NextRequest } from 'next/server';
 
-const API_BASE_URL = 'https://bin-reminder-app.vercel.app/api/set-current-turn';
+const API_BASE_URL = `${process.env.BACKEND_API_URL}/api/set-current-turn`;
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
     try {
